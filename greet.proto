@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+package greet;
+option go_package = "grpc-hello/greet";
+
+// The greeting service definition.
+service GreetService {
+  // Unary RPC method
+  rpc SayHello (GreetRequest) returns (GreetResponse);
+}
+
+// Request message
+message GreetRequest {
+  string name = 1;
+}
+
+// Response message
+message GreetResponse {
+  string message = 1;
+}
