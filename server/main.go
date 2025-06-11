@@ -2,9 +2,11 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"grpc-hello/greet/grpc-hello/greet"
 	"log"
 	"net"
+	"time"
 
 	"google.golang.org/grpc"
 )
@@ -17,6 +19,21 @@ func (s *greetServer) SayHello(ctx context.Context, req *greet.GreetRequest) (*g
 	log.Printf("Received request from: %s", req.GetName())
 	message := "Hello " + req.GetName()
 	return &greet.GreetResponse{Message: message}, nil
+}
+func (s *greetServer) GreetManyTimes(req *greet.GreetRequest, stream greet.GreetService_GreetManyTimesServer) error {
+	name := req.GetName()
+	log.Printf("Streaming greetings to: %s", name)
+	for i := 1; i <= 5; i++ {
+		msg := fmt.Sprintf("Hello %s #%d", name, i)
+		res := &greet.GreetResponse{
+			Message: msg}
+		if err := stream.Send(res); err != nil {
+			return err
+		}
+		time.Sleep(1 * time.Second)
+
+	}
+	return nil
 }
 func main() {
 	lis, err := net.Listen("tcp", ":50051")
