@@ -21,6 +21,8 @@ const _ = grpc.SupportPackageIsVersion9
 const (
 	GreetService_SayHello_FullMethodName       = "/greet.GreetService/SayHello"
 	GreetService_GreetManyTimes_FullMethodName = "/greet.GreetService/GreetManyTimes"
+	GreetService_GreetEveryone_FullMethodName  = "/greet.GreetService/GreetEveryone"
+	GreetService_GreetChat_FullMethodName      = "/greet.GreetService/GreetChat"
 )
 
 // GreetServiceClient is the client API for GreetService service.
@@ -33,6 +35,9 @@ type GreetServiceClient interface {
 	SayHello(ctx context.Context, in *GreetRequest, opts ...grpc.CallOption) (*GreetResponse, error)
 	// server streaming
 	GreetManyTimes(ctx context.Context, in *GreetRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[GreetResponse], error)
+	GreetEveryone(ctx context.Context, opts ...grpc.CallOption) (grpc.ClientStreamingClient[GreetRequest, GreetResponse], error)
+	// bidi streaming
+	GreetChat(ctx context.Context, opts ...grpc.CallOption) (grpc.BidiStreamingClient[GreetRequest, GreetResponse], error)
 }
 
 type greetServiceClient struct {
@@ -72,6 +77,32 @@ func (c *greetServiceClient) GreetManyTimes(ctx context.Context, in *GreetReques
 // This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
 type GreetService_GreetManyTimesClient = grpc.ServerStreamingClient[GreetResponse]
 
+func (c *greetServiceClient) GreetEveryone(ctx context.Context, opts ...grpc.CallOption) (grpc.ClientStreamingClient[GreetRequest, GreetResponse], error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	stream, err := c.cc.NewStream(ctx, &GreetService_ServiceDesc.Streams[1], GreetService_GreetEveryone_FullMethodName, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &grpc.GenericClientStream[GreetRequest, GreetResponse]{ClientStream: stream}
+	return x, nil
+}
+
+// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
+type GreetService_GreetEveryoneClient = grpc.ClientStreamingClient[GreetRequest, GreetResponse]
+
+func (c *greetServiceClient) GreetChat(ctx context.Context, opts ...grpc.CallOption) (grpc.BidiStreamingClient[GreetRequest, GreetResponse], error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	stream, err := c.cc.NewStream(ctx, &GreetService_ServiceDesc.Streams[2], GreetService_GreetChat_FullMethodName, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &grpc.GenericClientStream[GreetRequest, GreetResponse]{ClientStream: stream}
+	return x, nil
+}
+
+// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
+type GreetService_GreetChatClient = grpc.BidiStreamingClient[GreetRequest, GreetResponse]
+
 // GreetServiceServer is the server API for GreetService service.
 // All implementations must embed UnimplementedGreetServiceServer
 // for forward compatibility.
@@ -82,6 +113,9 @@ type GreetServiceServer interface {
 	SayHello(context.Context, *GreetRequest) (*GreetResponse, error)
 	// server streaming
 	GreetManyTimes(*GreetRequest, grpc.ServerStreamingServer[GreetResponse]) error
+	GreetEveryone(grpc.ClientStreamingServer[GreetRequest, GreetResponse]) error
+	// bidi streaming
+	GreetChat(grpc.BidiStreamingServer[GreetRequest, GreetResponse]) error
 	mustEmbedUnimplementedGreetServiceServer()
 }
 
@@ -97,6 +131,12 @@ func (UnimplementedGreetServiceServer) SayHello(context.Context, *GreetRequest) 
 }
 func (UnimplementedGreetServiceServer) GreetManyTimes(*GreetRequest, grpc.ServerStreamingServer[GreetResponse]) error {
 	return status.Errorf(codes.Unimplemented, "method GreetManyTimes not implemented")
+}
+func (UnimplementedGreetServiceServer) GreetEveryone(grpc.ClientStreamingServer[GreetRequest, GreetResponse]) error {
+	return status.Errorf(codes.Unimplemented, "method GreetEveryone not implemented")
+}
+func (UnimplementedGreetServiceServer) GreetChat(grpc.BidiStreamingServer[GreetRequest, GreetResponse]) error {
+	return status.Errorf(codes.Unimplemented, "method GreetChat not implemented")
 }
 func (UnimplementedGreetServiceServer) mustEmbedUnimplementedGreetServiceServer() {}
 func (UnimplementedGreetServiceServer) testEmbeddedByValue()                      {}
@@ -148,6 +188,20 @@ func _GreetService_GreetManyTimes_Handler(srv interface{}, stream grpc.ServerStr
 // This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
 type GreetService_GreetManyTimesServer = grpc.ServerStreamingServer[GreetResponse]
 
+func _GreetService_GreetEveryone_Handler(srv interface{}, stream grpc.ServerStream) error {
+	return srv.(GreetServiceServer).GreetEveryone(&grpc.GenericServerStream[GreetRequest, GreetResponse]{ServerStream: stream})
+}
+
+// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
+type GreetService_GreetEveryoneServer = grpc.ClientStreamingServer[GreetRequest, GreetResponse]
+
+func _GreetService_GreetChat_Handler(srv interface{}, stream grpc.ServerStream) error {
+	return srv.(GreetServiceServer).GreetChat(&grpc.GenericServerStream[GreetRequest, GreetResponse]{ServerStream: stream})
+}
+
+// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
+type GreetService_GreetChatServer = grpc.BidiStreamingServer[GreetRequest, GreetResponse]
+
 // GreetService_ServiceDesc is the grpc.ServiceDesc for GreetService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -165,6 +219,17 @@ var GreetService_ServiceDesc = grpc.ServiceDesc{
 			StreamName:    "GreetManyTimes",
 			Handler:       _GreetService_GreetManyTimes_Handler,
 			ServerStreams: true,
+		},
+		{
+			StreamName:    "GreetEveryone",
+			Handler:       _GreetService_GreetEveryone_Handler,
+			ClientStreams: true,
+		},
+		{
+			StreamName:    "GreetChat",
+			Handler:       _GreetService_GreetChat_Handler,
+			ServerStreams: true,
+			ClientStreams: true,
 		},
 	},
 	Metadata: "greet.proto",

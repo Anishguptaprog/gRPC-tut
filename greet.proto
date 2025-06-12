@@ -9,6 +9,9 @@ service GreetService {
   rpc SayHello (GreetRequest) returns (GreetResponse);
   // server streaming
   rpc GreetManyTimes (GreetRequest) returns (stream GreetResponse);
+  rpc GreetEveryone (stream GreetRequest) returns (GreetResponse);  // Client streaming
+  //bidi streaming
+  rpc GreetChat (stream GreetRequest) returns (stream GreetResponse);
 }
 
 // Request message

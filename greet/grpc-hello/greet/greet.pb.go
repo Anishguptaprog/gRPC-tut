@@ -119,10 +119,12 @@ const file_greet_proto_rawDesc = "" +
 	"\fGreetRequest\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\")\n" +
 	"\rGreetResponse\x12\x18\n" +
-	"\amessage\x18\x01 \x01(\tR\amessage2\x84\x01\n" +
+	"\amessage\x18\x01 \x01(\tR\amessage2\xfe\x01\n" +
 	"\fGreetService\x125\n" +
 	"\bSayHello\x12\x13.greet.GreetRequest\x1a\x14.greet.GreetResponse\x12=\n" +
-	"\x0eGreetManyTimes\x12\x13.greet.GreetRequest\x1a\x14.greet.GreetResponse0\x01B\x12Z\x10grpc-hello/greetb\x06proto3"
+	"\x0eGreetManyTimes\x12\x13.greet.GreetRequest\x1a\x14.greet.GreetResponse0\x01\x12<\n" +
+	"\rGreetEveryone\x12\x13.greet.GreetRequest\x1a\x14.greet.GreetResponse(\x01\x12:\n" +
+	"\tGreetChat\x12\x13.greet.GreetRequest\x1a\x14.greet.GreetResponse(\x010\x01B\x12Z\x10grpc-hello/greetb\x06proto3"
 
 var (
 	file_greet_proto_rawDescOnce sync.Once
@@ -144,10 +146,14 @@ var file_greet_proto_goTypes = []any{
 var file_greet_proto_depIdxs = []int32{
 	0, // 0: greet.GreetService.SayHello:input_type -> greet.GreetRequest
 	0, // 1: greet.GreetService.GreetManyTimes:input_type -> greet.GreetRequest
-	1, // 2: greet.GreetService.SayHello:output_type -> greet.GreetResponse
-	1, // 3: greet.GreetService.GreetManyTimes:output_type -> greet.GreetResponse
-	2, // [2:4] is the sub-list for method output_type
-	0, // [0:2] is the sub-list for method input_type
+	0, // 2: greet.GreetService.GreetEveryone:input_type -> greet.GreetRequest
+	0, // 3: greet.GreetService.GreetChat:input_type -> greet.GreetRequest
+	1, // 4: greet.GreetService.SayHello:output_type -> greet.GreetResponse
+	1, // 5: greet.GreetService.GreetManyTimes:output_type -> greet.GreetResponse
+	1, // 6: greet.GreetService.GreetEveryone:output_type -> greet.GreetResponse
+	1, // 7: greet.GreetService.GreetChat:output_type -> greet.GreetResponse
+	4, // [4:8] is the sub-list for method output_type
+	0, // [0:4] is the sub-list for method input_type
 	0, // [0:0] is the sub-list for extension type_name
 	0, // [0:0] is the sub-list for extension extendee
 	0, // [0:0] is the sub-list for field type_name

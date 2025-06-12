@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"grpc-hello/greet/grpc-hello/greet"
+	"io"
 	"log"
 	"net"
 	"time"
@@ -34,6 +35,55 @@ func (s *greetServer) GreetManyTimes(req *greet.GreetRequest, stream greet.Greet
 
 	}
 	return nil
+}
+func (s *greetServer) GreetEveryone(stream greet.GreetService_GreetEveryoneServer) error {
+	log.Println("Receiving stream of greetings")
+	var names []string
+	for {
+		req, err := stream.Recv()
+		if err == io.EOF {
+			message := fmt.Sprintf("Hello %s", joinNames(names))
+			return stream.SendAndClose(&greet.GreetResponse{Message: message})
+		}
+		if err != nil {
+			return err
+		}
+		names = append(names, req.GetName())
+	}
+
+}
+func joinNames(names []string) string {
+	return joinWithComma(names)
+}
+func joinWithComma(names []string) string {
+	result := ""
+	for i, name := range names {
+		if i > 0 {
+			result += ", "
+		}
+		result += name
+	}
+	return result
+}
+func (s *greetServer) GreetChat(stream greet.GreetService_GreetChatServer) error {
+	log.Println("starting bidi stream...")
+	for {
+		req, err := stream.Recv()
+		if err == io.EOF {
+			log.Println("bidi stream closed by client")
+			return nil
+		}
+		if err != nil {
+			return err
+		}
+		resp := &greet.GreetResponse{
+			Message: "Hello " + req.GetName(),
+		}
+		log.Printf("sending greeting for: %s", req.GetName())
+		if err := stream.Send(resp); err != nil {
+			return err
+		}
+	}
 }
 func main() {
 	lis, err := net.Listen("tcp", ":50051")
